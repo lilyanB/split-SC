@@ -2,11 +2,11 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("invest", async function () {
-  let invest, erc20;
+  let invest, erc20, owner, addr1, addr2;
 
   // deploy contract before the tests
   before("deploy the contract instance first", async function () {
-    const [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, addr1, addr2] = await ethers.getSigners();
     const Invest = await ethers.getContractFactory("invest");
     invest = await Invest.deploy();
     await invest.deployed();
@@ -15,16 +15,15 @@ describe("invest", async function () {
     erc20 = await ERC20.deploy(10);
     await erc20.deployed();
 
-    const address1 = await addr1.getAddress()
-
 
     console.log("invest", invest.address)
     console.log("erc20", erc20.address)
-    console.log(owner.address)
-    console.log(address1)
   });
 
   it("Good name", async function () {
+    console.log(owner.address)
+    console.log(addr1.address)
+    console.log(addr2.address)
     const name = await invest.name()
     expect(name).to.equal("My Collection 1.0");
   });
@@ -55,25 +54,39 @@ describe("invest", async function () {
     uri = "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/"
     const txCreate = await invest.createNewToken(40, uri)
     await txCreate.wait()
-    const txValues = await invest.setValuesOfNFT(300,4)
+    const txValues = await invest.setValuesOfNFT(300, 4)
     await txValues.wait()
-    
+
     const supply = await invest.supply(4)
     const priceNFT = await invest.getValuesOfNFT(4)
     assert.equal(supply, 40);
     assert.equal(priceNFT, 300);
     const ID = await invest.currentID()
-    assert.equal(ID-1, 4)
+    assert.equal(ID - 1, 4)
   });
 
-  // it("transfer and force buy", async function () {
-  //   const balance = await erc20.balanceOf(owner.address)
-  //   assert.equal(balance, 10*10**18);
-  //   const txIncreaseAllowance = await erc20.increaseAllowance(owner.address, 20)
-  //   await txIncreaseAllowance.wait()
-  //   const allowance = await erc20.allowance(owner.address, addr1.address)
-  //   console.log(allowance)
-  //   assert.equal(allowance, 20);
-  // });
-  
+  it("test allowance", async function () {
+    const balance = await erc20.balanceOf(owner.address)
+    assert.equal(balance, 10 * 10 ** 18);
+    const txIncreaseAllowance = await erc20.increaseAllowance(addr1.address, 20)
+    await txIncreaseAllowance.wait()
+    const allowance = await erc20.allowance(owner.address, addr1.address)
+    assert.equal(allowance, 20);
+  });
+
+  it("transfer and force buy", async function () {
+    const transferToken = await invest.safeTransferFrom(owner.address, addr1.address, 1, 2, "0x")
+    await transferToken.wait()
+    const numberOwnersWithoutMe = await invest.numberOwnersWithoutMe(1)
+    assert.equal(numberOwnersWithoutMe, 2);
+
+    const forceBuy = await invest.forceBuy(1)
+    await forceBuy.wait()
+
+    const numberOwnersWithoutMeAfterForceBuy = await invest.numberOwnersWithoutMe(1)
+    assert.equal(numberOwnersWithoutMeAfterForceBuy, 0);
+
+
+  });
+
 });
