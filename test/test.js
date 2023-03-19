@@ -52,10 +52,8 @@ describe("invest", async function () {
 
   it("New creation", async function () {
     uri = "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/"
-    const txCreate = await invest.createNewToken(40, uri, 3)
+    const txCreate = await invest.createNewToken(40, uri, 3, 300)
     await txCreate.wait()
-    const txValues = await invest.setValuesOfNFT(300, 4)
-    await txValues.wait()
 
     const supply = await invest.supply(4)
     const priceNFT = await invest.getValuesOfNFT(4)
