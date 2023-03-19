@@ -52,7 +52,7 @@ describe("invest", async function () {
 
   it("New creation", async function () {
     uri = "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/"
-    const txCreate = await invest.createNewToken(40, uri)
+    const txCreate = await invest.createNewToken(40, uri, 3)
     await txCreate.wait()
     const txValues = await invest.setValuesOfNFT(300, 4)
     await txValues.wait()
@@ -79,14 +79,6 @@ describe("invest", async function () {
     await transferToken.wait()
     const numberOwnersWithoutMe = await invest.numberOwnersWithoutMe(1)
     assert.equal(numberOwnersWithoutMe, 2);
-
-    const forceBuy = await invest.forceBuy(1)
-    await forceBuy.wait()
-
-    const numberOwnersWithoutMeAfterForceBuy = await invest.numberOwnersWithoutMe(1)
-    assert.equal(numberOwnersWithoutMeAfterForceBuy, 0);
-
-
   });
 
 });

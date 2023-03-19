@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract invest is ERC1155, Pausable {
-    uint256 deployDate;
     uint256 tokenIDCounter = 1;
     uint256 public constant WineSupply = 10;
     uint256 public constant WatchSupply = 1;
@@ -18,6 +17,8 @@ contract invest is ERC1155, Pausable {
 
     mapping(uint256 => uint256) public tokenSupply;
     mapping(uint256 => uint256) public NFTPrice;
+    mapping(uint256 => uint256) public _deployDate;
+    mapping(uint256 => uint256) public _forceForDays;
     // Mapping from token ID to account balances
     mapping(uint256 => address[]) private balances;
 
@@ -27,9 +28,8 @@ contract invest is ERC1155, Pausable {
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
 
-    constructor() ERC1155("a") {
+    constructor() ERC1155("") {
         owner = msg.sender;
-        deployDate = block.timestamp;
 
         _mint(msg.sender, tokenIDCounter, WineSupply, "");
         tokenSupply[tokenIDCounter] = WineSupply;
@@ -38,6 +38,8 @@ contract invest is ERC1155, Pausable {
             tokenIDCounter,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/"
         );
+        _setDeployDate(tokenIDCounter);
+        _setForceForDays(tokenIDCounter, 0);
 
         for (uint8 i = 0; i < WineSupply; i++) {
             balances[tokenIDCounter].push(msg.sender);
@@ -52,6 +54,8 @@ contract invest is ERC1155, Pausable {
             tokenIDCounter,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/"
         );
+        _setDeployDate(tokenIDCounter);
+        _setForceForDays(tokenIDCounter, 100);
 
         for (uint8 i = 0; i < WatchSupply; i++) {
             balances[tokenIDCounter].push(msg.sender);
@@ -66,6 +70,8 @@ contract invest is ERC1155, Pausable {
             tokenIDCounter,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/"
         );
+        _setDeployDate(tokenIDCounter);
+        _setForceForDays(tokenIDCounter, 100);
 
         for (uint8 i = 0; i < NikeSupply; i++) {
             balances[tokenIDCounter].push(msg.sender);
@@ -93,11 +99,23 @@ contract invest is ERC1155, Pausable {
         return tokenIDCounter;
     }
 
-    function createNewToken(uint256 newSupply,string memory URIToken) public onlyOwner{
+    function createNewToken(uint256 newSupply, string memory URIToken, uint256 numberDays) public onlyOwner{
         tokenSupply[tokenIDCounter] = newSupply;
         _mint(msg.sender, tokenIDCounter, newSupply, "");
         _setTokenURI(tokenIDCounter, URIToken);
+        _setDeployDate(tokenIDCounter);
+        _setForceForDays(tokenIDCounter, numberDays);
         tokenIDCounter += 1;
+    }
+
+    function _setForceForDays(uint256 tokenId, uint256 numberDays) public onlyOwner
+    {
+        _forceForDays[tokenId] = numberDays;
+    }
+
+    function _setDeployDate(uint256 tokenId) public onlyOwner
+    {
+        _deployDate[tokenId] = block.timestamp;
     }
 
     function _setTokenURI(uint256 tokenId, string memory _tokenURI) public onlyOwner
@@ -247,7 +265,7 @@ contract invest is ERC1155, Pausable {
 
     function forceBuy(uint256 tokenId) public whenNotPaused {
         require(
-            block.timestamp > deployDate + 2 minutes,
+            block.timestamp >= _deployDate[tokenId] + _forceForDays[tokenId] * 1 days,
             "Wait 2 minutes before use this function"
         );
         require(canBuyAll(msg.sender, tokenId), "You can't buy all");
