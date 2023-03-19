@@ -59,6 +59,10 @@ contract invest is ERC1155, Pausable {
         _;
     }
 
+    function changeOwner(address newOwner) public onlyOwner {
+        owner = newOwner
+    }
+
     function pause() public onlyOwner {
         _pause();
     }
