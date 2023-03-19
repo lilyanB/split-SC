@@ -59,8 +59,8 @@ describe("invest", async function () {
     const priceNFT = await invest.getValuesOfNFT(4)
     assert.equal(supply, 40);
     assert.equal(priceNFT, 300);
-    const ID = await invest.currentID()
-    assert.equal(ID - 1, 4)
+    const ID = await invest.currentSplit()
+    assert.equal(ID, 4)
   });
 
   it("test allowance", async function () {
@@ -72,11 +72,30 @@ describe("invest", async function () {
     assert.equal(allowance, 20);
   });
 
-  it("transfer and force buy", async function () {
+  it("transfer", async function () {
     const transferToken = await invest.safeTransferFrom(owner.address, addr1.address, 1, 2, "0x")
     await transferToken.wait()
     const numberOwnersWithoutMe = await invest.numberOwnersWithoutMe(1)
     assert.equal(numberOwnersWithoutMe, 2);
+  });
+
+  it("percent", async function () {
+    const percent = await invest.percent(owner.address, 1)
+    assert.equal(percent, 80);
+  });
+
+  it("can buy", async function () {
+    const canBuy = await invest.canBuyAll(owner.address, 1)
+    assert.equal(canBuy, true);
+    const cantBuy = await invest.canBuyAll(addr1.address, 1)
+    assert.equal(cantBuy, false);
+  });
+
+  it("value to buy", async function () {
+    const percent = await invest.percent(owner.address, 1)
+    assert.equal(percent, 80);
+    const valueToBuy = await invest.valueToBuy(owner.address, 1)
+    assert.equal(valueToBuy, 20);
   });
 
 });

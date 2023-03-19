@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract invest is ERC1155, Pausable {
-    uint256 tokenIDCounter = 1;
     uint256 public constant WineSupply = 10;
     uint256 public constant WatchSupply = 1;
     uint256 public constant NikeSupply = 8;
@@ -15,17 +14,22 @@ contract invest is ERC1155, Pausable {
     uint256 public constant WatchCurrentValueUSDT = 3;
     uint256 public constant NikeCurrentValueUSDT = 3;
 
-    mapping(uint256 => uint256) public tokenSupply;
-    mapping(uint256 => uint256) public NFTPrice;
-    mapping(uint256 => uint256) public _deployDate;
-    mapping(uint256 => uint256) public _forceForDays;
+    struct SPLIT {
+        uint256 id;
+        uint256 supply;
+        uint256 price;
+        uint256 deployDate;
+        uint256 daysToBuy;
+        string tokenURI;
+    }
+    //informations du SPLIT par id
+    mapping(uint256 => SPLIT) public SPLITToStruct;
+    //nombre total de SPLIT
+    uint256 totalSPLIT = 0;
     mapping(uint256 => address[]) private balances;
 
     address erc20;
     address owner;
-
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
 
     constructor() ERC1155("") {
         owner = msg.sender;
@@ -40,14 +44,14 @@ contract invest is ERC1155, Pausable {
         createNewToken(
             WatchSupply,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/",
-            0,
+            4,
             WatchCurrentValueUSDT
         );
 
         createNewToken(
             NikeSupply,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/",
-            0,
+            2,
             NikeCurrentValueUSDT
         );
     }
@@ -71,60 +75,45 @@ contract invest is ERC1155, Pausable {
         _unpause();
     }
 
-    function currentID() public view returns (uint256) {
-        return tokenIDCounter;
+    function currentSplit() public view returns (uint256) {
+        return totalSPLIT;
     }
 
     function createNewToken(
         uint256 newSupply,
         string memory URIToken,
         uint256 numberDays,
-        uint256 priveOfToken
+        uint256 priceOfToken
     ) public onlyOwner {
-        tokenSupply[tokenIDCounter] = newSupply;
-        _mint(msg.sender, tokenIDCounter, newSupply, "");
-        NFTPrice[tokenIDCounter] = priveOfToken;
-        _setTokenURI(tokenIDCounter, URIToken);
-        _setDeployDate(tokenIDCounter);
-        _setForceForDays(tokenIDCounter, numberDays);
-
-        for (uint8 i = 0; i < WineSupply; i++) {
-            balances[tokenIDCounter].push(msg.sender);
+        totalSPLIT += 1;
+        uint256 id = totalSPLIT;
+        for (uint8 i = 0; i < newSupply; i++) {
+            balances[id].push(msg.sender);
         }
-
-        tokenIDCounter += 1;
-    }
-
-    function _setForceForDays(
-        uint256 tokenId,
-        uint256 numberDays
-    ) public onlyOwner {
-        _forceForDays[tokenId] = numberDays;
-    }
-
-    function _setDeployDate(uint256 tokenId) public onlyOwner {
-        _deployDate[tokenId] = block.timestamp;
-    }
-
-    function _setTokenURI(
-        uint256 tokenId,
-        string memory _tokenURI
-    ) public onlyOwner {
-        _tokenURIs[tokenId] = _tokenURI;
+        SPLIT memory split = SPLIT(
+            id,
+            newSupply,
+            priceOfToken,
+            block.timestamp,
+            numberDays,
+            URIToken
+        );
+        SPLITToStruct[id] = split;
+        _mint(msg.sender, totalSPLIT, newSupply, "0x");
     }
 
     function uri(
-        uint256 _tokenid
+        uint256 id
     ) public view override returns (string memory) {
         require(
-            tokenSupply[_tokenid] > 0,
+            totalSPLIT >= id,
             "ERC721Metadata: URI query for nonexistent token"
         );
 
-        string memory _tokenURI = _tokenURIs[_tokenid];
+        string memory _tokenURI = SPLITToStruct[id].tokenURI;
         return
             string(
-                abi.encodePacked(_tokenURI, Strings.toString(_tokenid), ".json")
+                abi.encodePacked(_tokenURI, Strings.toString(id), ".json")
             );
     }
 
@@ -133,7 +122,7 @@ contract invest is ERC1155, Pausable {
     }
 
     function supply(uint256 id) public view returns (uint256) {
-        return tokenSupply[id];
+        return SPLITToStruct[id].supply;
     }
 
     function percent(
@@ -141,7 +130,7 @@ contract invest is ERC1155, Pausable {
         uint256 id
     ) public view returns (uint256) {
         uint256 number = balanceOf(account, id);
-        uint256 totalSupply = tokenSupply[id];
+        uint256 totalSupply = SPLITToStruct[id].supply;
 
         return uint256((number * 100) / totalSupply);
     }
@@ -151,18 +140,20 @@ contract invest is ERC1155, Pausable {
     }
 
     function setValuesOfNFT(uint256 value, uint256 id) public onlyOwner {
-        NFTPrice[id] = value;
+        SPLITToStruct[id].price = value;
     }
 
     function getValuesOfNFT(uint256 id) public view returns (uint256) {
-        return NFTPrice[id];
+        return SPLITToStruct[id].price;
     }
 
     function valueToBuy(
         address account,
-        uint256 tokenId
+        uint256 id
     ) public view returns (uint256) {
-        return NFTPrice[tokenId] / (100 - percent(account, tokenId));
+        uint256 priceOneToken = SPLITToStruct[id].price / SPLITToStruct[id].supply;
+        uint256 percentRest = 100 - percent(account, id);
+        return priceOneToken * percentRest;
     }
 
     function find(address value, uint256 id) public view returns (uint256) {
@@ -173,8 +164,8 @@ contract invest is ERC1155, Pausable {
         return i;
     }
 
-    function allOwner(uint256 tokenId) public view returns (address[] memory) {
-        return balances[tokenId];
+    function allOwner(uint256 id) public view returns (address[] memory) {
+        return balances[id];
     }
 
     function safeTransferFrom(
@@ -214,9 +205,9 @@ contract invest is ERC1155, Pausable {
     }
 
     function numberOwnersWithoutMe(
-        uint256 tokenId
+        uint256 id
     ) public view returns (uint256) {
-        address[] memory owners = allOwner(tokenId);
+        address[] memory owners = allOwner(id);
         uint256 numberTotal = 0;
         for (uint256 i = 0; i < owners.length; i++) {
             if (owners[i] != msg.sender) {
@@ -228,10 +219,10 @@ contract invest is ERC1155, Pausable {
     }
 
     function OwnersWithoutMe(
-        uint256 tokenId
+        uint256 id
     ) public view returns (address[] memory) {
-        address[] memory owners = allOwner(tokenId);
-        uint256 numberownersWithoutMe = numberOwnersWithoutMe(tokenId);
+        address[] memory owners = allOwner(id);
+        uint256 numberownersWithoutMe = numberOwnersWithoutMe(id);
         address[] memory list = new address[](numberownersWithoutMe);
         uint256 iList = 0;
         for (uint256 i = 0; i < owners.length; i++) {
@@ -244,17 +235,17 @@ contract invest is ERC1155, Pausable {
         return list;
     }
 
-    function forceBuy(uint256 tokenId) public whenNotPaused {
+    function forceBuy(uint256 id) public whenNotPaused {
         require(
             block.timestamp >=
-                _deployDate[tokenId] + _forceForDays[tokenId] * 1 days,
+                SPLITToStruct[id].deployDate + SPLITToStruct[id].daysToBuy * 1 days,
             "Wait 2 minutes before use this function"
         );
-        require(canBuyAll(msg.sender, tokenId), "You can't buy all");
+        require(canBuyAll(msg.sender, id), "You can't buy all");
 
-        uint256 numberOfOwnersNotMe = numberOwnersWithoutMe(tokenId);
-        address[] memory addressOfOwnersNotMe = OwnersWithoutMe(tokenId);
-        uint256 priceOneToken = NFTPrice[tokenId] / tokenSupply[tokenId];
+        uint256 numberOfOwnersNotMe = numberOwnersWithoutMe(id);
+        address[] memory addressOfOwnersNotMe = OwnersWithoutMe(id);
+        uint256 priceOneToken = SPLITToStruct[id].price / SPLITToStruct[id].supply;
 
         IERC20 erc20Contract = IERC20(erc20);
 
@@ -273,7 +264,7 @@ contract invest is ERC1155, Pausable {
             forceTransferFrom(
                 addressOfOwnersNotMe[i],
                 msg.sender,
-                tokenId,
+                id,
                 1,
                 "0x"
             );
