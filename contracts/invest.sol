@@ -22,10 +22,11 @@ contract invest is ERC1155, Pausable {
         uint256 daysToBuy;
         string tokenURI;
     }
-    //informations du SPLIT par id
+    // informations du SPLIT par id
     mapping(uint256 => SPLIT) public SPLITToStruct;
-    //nombre total de SPLIT
+    // nombre total de SPLIT
     uint256 totalSPLIT = 0;
+    // list of owner of token
     mapping(uint256 => address[]) private balances;
 
     address erc20;
