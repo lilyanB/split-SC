@@ -19,7 +19,6 @@ contract invest is ERC1155, Pausable {
     mapping(uint256 => uint256) public NFTPrice;
     mapping(uint256 => uint256) public _deployDate;
     mapping(uint256 => uint256) public _forceForDays;
-    // Mapping from token ID to account balances
     mapping(uint256 => address[]) private balances;
 
     address erc20;
