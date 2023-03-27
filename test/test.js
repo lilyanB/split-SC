@@ -73,29 +73,27 @@ describe("invest", async function () {
   });
 
   it("transfer", async function () {
-    const transferToken = await invest.safeTransferFrom(owner.address, addr1.address, 1, 2, "0x")
+    const transferToken = await invest.safeTransferFrom(owner.address, addr1.address, 4, 8, "0x")
     await transferToken.wait()
-    const numberOwnersWithoutMe = await invest.numberOwnersWithoutMe(1)
-    assert.equal(numberOwnersWithoutMe, 2);
+    const numberOwnersWithoutMe = await invest.numberOwnersWithoutMe(4)
+    assert.equal(numberOwnersWithoutMe, 8);
   });
 
   it("percent", async function () {
-    const percent = await invest.percent(owner.address, 1)
-    assert.equal(percent, 80);
+    const percent = await invest.percent(owner.address, 4)
+    assert.equal(percent, 32/40*100);
   });
 
   it("can buy", async function () {
-    const canBuy = await invest.canBuyAll(owner.address, 1)
+    const canBuy = await invest.canBuyAll(owner.address, 4)
     assert.equal(canBuy, true);
-    const cantBuy = await invest.canBuyAll(addr1.address, 1)
+    const cantBuy = await invest.canBuyAll(addr1.address, 4)
     assert.equal(cantBuy, false);
   });
 
   it("value to buy", async function () {
-    const percent = await invest.percent(owner.address, 1)
-    assert.equal(percent, 80);
-    const valueToBuy = await invest.valueToBuy(owner.address, 1)
-    assert.equal(valueToBuy, 20);
+    const valueToBuy = await invest.valueToBuy(owner.address, 4)
+    assert.equal(valueToBuy, (8/40)*(300));
   });
 
 });

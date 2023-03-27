@@ -7,13 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract invest is ERC1155, Pausable {
-    uint256 public constant WineSupply = 10;
-    uint256 public constant WatchSupply = 1;
-    uint256 public constant NikeSupply = 8;
-    uint256 public constant WineValueUSDT = 10;
-    uint256 public constant WatchCurrentValueUSDT = 3;
-    uint256 public constant NikeCurrentValueUSDT = 3;
-
     struct SPLIT {
         uint256 id;
         uint256 supply;
@@ -25,35 +18,36 @@ contract invest is ERC1155, Pausable {
     // informations du SPLIT par id
     mapping(uint256 => SPLIT) public SPLITToStruct;
     // nombre total de SPLIT
-    uint256 totalSPLIT = 0;
+    uint256 totalSPLIT;
     // list of owner of token
     mapping(uint256 => address[]) private balances;
 
     address erc20;
     address owner;
+    uint256 decimals;
 
     constructor() ERC1155("") {
         owner = msg.sender;
 
         createNewToken(
-            WineSupply,
+            10,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/",
             0,
-            WineValueUSDT
+            10
         );
 
         createNewToken(
-            WatchSupply,
+            1,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/",
             4,
-            WatchCurrentValueUSDT
+            3
         );
 
         createNewToken(
-            NikeSupply,
+            8,
             "https://ipfs.io/ipfs/bafybeibk2avibnccl5wcq5kqmmf3qyabugiq3ry6pwj5gux6hfgmm5xzom/",
             2,
-            NikeCurrentValueUSDT
+            3
         );
     }
 
@@ -87,25 +81,22 @@ contract invest is ERC1155, Pausable {
         uint256 priceOfToken
     ) public onlyOwner {
         totalSPLIT += 1;
-        uint256 id = totalSPLIT;
         for (uint8 i = 0; i < newSupply; i++) {
-            balances[id].push(msg.sender);
+            balances[totalSPLIT].push(msg.sender);
         }
         SPLIT memory split = SPLIT(
-            id,
+            totalSPLIT,
             newSupply,
             priceOfToken,
             block.timestamp,
             numberDays,
             URIToken
         );
-        SPLITToStruct[id] = split;
+        SPLITToStruct[totalSPLIT] = split;
         _mint(msg.sender, totalSPLIT, newSupply, "0x");
     }
 
-    function uri(
-        uint256 id
-    ) public view override returns (string memory) {
+    function uri(uint256 id) public view override returns (string memory) {
         require(
             totalSPLIT >= id,
             "ERC721Metadata: URI query for nonexistent token"
@@ -113,9 +104,7 @@ contract invest is ERC1155, Pausable {
 
         string memory _tokenURI = SPLITToStruct[id].tokenURI;
         return
-            string(
-                abi.encodePacked(_tokenURI, Strings.toString(id), ".json")
-            );
+            string(abi.encodePacked(_tokenURI, Strings.toString(id), ".json"));
     }
 
     function name() external pure returns (string memory) {
@@ -152,9 +141,8 @@ contract invest is ERC1155, Pausable {
         address account,
         uint256 id
     ) public view returns (uint256) {
-        uint256 priceOneToken = SPLITToStruct[id].price / SPLITToStruct[id].supply;
-        uint256 percentRest = 100 - percent(account, id);
-        return priceOneToken * percentRest;
+        uint256 tokenRest = 100 - percent(account, id);
+        return (tokenRest * SPLITToStruct[id].price) / 100;
     }
 
     function find(address value, uint256 id) public view returns (uint256) {
@@ -205,9 +193,7 @@ contract invest is ERC1155, Pausable {
         _safeTransferFrom(from, to, id, amount, data);
     }
 
-    function numberOwnersWithoutMe(
-        uint256 id
-    ) public view returns (uint256) {
+    function numberOwnersWithoutMe(uint256 id) public view returns (uint256) {
         address[] memory owners = allOwner(id);
         uint256 numberTotal = 0;
         for (uint256 i = 0; i < owners.length; i++) {
@@ -239,14 +225,17 @@ contract invest is ERC1155, Pausable {
     function forceBuy(uint256 id) public whenNotPaused {
         require(
             block.timestamp >=
-                SPLITToStruct[id].deployDate + SPLITToStruct[id].daysToBuy * 1 days,
+                SPLITToStruct[id].deployDate +
+                    SPLITToStruct[id].daysToBuy *
+                    1 days,
             "Wait 2 minutes before use this function"
         );
         require(canBuyAll(msg.sender, id), "You can't buy all");
 
         uint256 numberOfOwnersNotMe = numberOwnersWithoutMe(id);
         address[] memory addressOfOwnersNotMe = OwnersWithoutMe(id);
-        uint256 priceOneToken = SPLITToStruct[id].price / SPLITToStruct[id].supply;
+        uint256 priceOneToken = SPLITToStruct[id].price /
+            SPLITToStruct[id].supply;
 
         IERC20 erc20Contract = IERC20(erc20);
 
@@ -262,24 +251,24 @@ contract invest is ERC1155, Pausable {
                     priceOneToken
                 )
             );
-            forceTransferFrom(
-                addressOfOwnersNotMe[i],
-                msg.sender,
-                id,
-                1,
-                "0x"
-            );
+            forceTransferFrom(addressOfOwnersNotMe[i], msg.sender, id, 1, "0x");
         }
     }
 
     function ChangeERC20Address(
-        address newErc20
+        address newErc20,
+        uint256 newDeimals
     ) public onlyOwner returns (address) {
+        decimals = newDeimals;
         erc20 = newErc20;
         return address(erc20);
     }
 
     function ERC20Address() public view returns (address) {
         return address(erc20);
+    }
+
+    function ERC20Decimals() public view returns (uint256) {
+        return decimals;
     }
 }
