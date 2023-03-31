@@ -168,11 +168,65 @@ contract invest is ERC1155, Pausable {
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not token owner nor approved"
         );
+        _safeTransferFrom(from, to, id, amount, data);
         for (uint256 i = 0; i < amount; i++) {
             uint256 index = find(from, id);
             balances[id][index] = to;
         }
-        _safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public virtual override {
+        require(
+            from == _msgSender() || isApprovedForAll(from, _msgSender()),
+            "ERC1155: caller is not token owner or approved"
+        );
+        _safeBatchTransferFrom(from, to, ids, amounts, data);
+        for (uint256 i = 0; i < amounts.length; i++) {
+            for (uint256 y = 0; y < amounts[i]; y++) {
+                uint256 index = find(from, ids[i]);
+                balances[ids[i]][index] = to;
+            }
+        }
+    }
+
+    function burn(
+        address from,
+        uint256 id,
+        uint256 amount
+    ) public virtual {
+        require(
+            from == _msgSender() || isApprovedForAll(from, _msgSender()),
+            "ERC1155: caller is not token owner nor approved"
+        );
+        _burn(from, id, amount);
+        for (uint256 i = 0; i < amount; i++) {
+            uint256 index = find(from, id);
+            balances[id][index] = address(0);
+        }
+    }
+
+    function burnBatch(
+        address from,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) public  virtual {
+        require(
+            from == _msgSender() || isApprovedForAll(from, _msgSender()),
+            "ERC1155: caller is not token owner or approved"
+        );
+        _burnBatch(from, ids, amounts);
+        for (uint256 i = 0; i < amounts.length; i++) {
+            for (uint256 y = 0; y < amounts[i]; y++) {
+                uint256 index = find(from, ids[i]);
+                balances[ids[i]][index] = address(0);
+            }
+        }
     }
 
     function forceTransferFrom(
