@@ -28,19 +28,21 @@ async function main() {
   const erc20 = await myContract.ERC20Address();
   console.log("Address erc20 : ", erc20);
 
-  /* const newerc20 = await myContract.ChangeERC20Address("0x16058B460D6fB42a3c9b7201dC8e6D62f357e161")
-  console.log("Address erc20 : ", newerc20); */
+  // const newerc20 = await myContract.ChangeERC20Address("0x16058B460D6fB42a3c9b7201dC8e6D62f357e161",1)
+  // console.log("Address erc20 : ", newerc20);
 
   
-  /* const transfert = await myContract.safeTransferFrom(lilA,maxA,1,1,2);
-  console.log("Info transfert : ", JSON.stringify(transfert)); */
+  // const transfert = await myContract.safeTransferFrom(lilA,maxA,1,1,2);
+  // console.log("Info transfert : ", JSON.stringify(transfert));
 
 
-  //const increase = await myContractERC20.increaseAllowance("0xFA726C4D85A4Df11b61D9616F22268d089FE7840",10)
+  // const increase = await myContractERC20.increaseAllowance("0x4037dB72F35e48C820EACca56b9CCE10f82875B4",90)
   const allowance = await myContractERC20.allowance(lilA,contract);
   console.log("Current allowance : ", allowance);
 
-
+  //const setValue = await myContract.setValuesOfNFT(10,1)
+  const value = await myContract.getValuesOfNFT(1)
+  console.log("Current value Wine : ", value);
 
   const myBalanceSaintEmilion = await myContract.balanceOf(MY_ADRESS, 1);
   console.log("Balance of SaintEmilion : ", JSON.stringify(myBalanceSaintEmilion));
@@ -50,53 +52,54 @@ async function main() {
   const myBalancenike = await myContract.balanceOf(MY_ADRESS, 3);
   console.log("Balance of nike : ", myBalancenike.toNumber());
   
-  const name = await myContract.name();
-  console.log("Name of Collection : ", name);
+  // const name = await myContract.name();
+  // console.log("Name of Collection : ", name);
 
-  const supplySaintEmilion = await myContract.supply(1);
-  console.log("Supply of SaintEmilion : ", supplySaintEmilion.toNumber());
-  const supplymontre = await myContract.supply(2);
-  console.log("Supply of montre : ", supplymontre.toNumber());
-  const supplynike = await myContract.supply(3);
-  console.log("Supply of nike : ", supplynike.toNumber());
+  // const supplySaintEmilion = await myContract.supply(1);
+  // console.log("Supply of SaintEmilion : ", supplySaintEmilion.toNumber());
+  // const supplymontre = await myContract.supply(2);
+  // console.log("Supply of montre : ", supplymontre.toNumber());
+  // const supplynike = await myContract.supply(3);
+  // console.log("Supply of nike : ", supplynike.toNumber());
 
   
-  const balanceSaintEmilionLil = await myContract.percent(MY_ADRESS, 1);
-  console.log("Percent of SaintEmilion, Contract have : ", balanceSaintEmilionLil.toNumber());
-  const balanceSaintEmilion = await myContract.percent(MAX_ADRESS, 1);
-  console.log("Percent of SaintEmilion, Max have : ", balanceSaintEmilion.toNumber());
-  const balancemontre = await myContract.percent(MY_ADRESS, 2);
-  console.log("Percent of montre : ", balancemontre.toNumber());
-  const balancenike = await myContract.percent(MY_ADRESS, 3);
-  console.log("Percent of nike : ", balancenike.toNumber());
+  // const balanceSaintEmilionLil = await myContract.percent(MY_ADRESS, 1);
+  // console.log("Percent of SaintEmilion, Contract have : ", balanceSaintEmilionLil.toNumber());
+  // const balanceSaintEmilion = await myContract.percent(MAX_ADRESS, 1);
+  // console.log("Percent of SaintEmilion, Max have : ", balanceSaintEmilion.toNumber());
+  // const balancemontre = await myContract.percent(MY_ADRESS, 2);
+  // console.log("Percent of montre : ", balancemontre.toNumber());
+  // const balancenike = await myContract.percent(MY_ADRESS, 3);
+  // console.log("Percent of nike : ", balancenike.toNumber());
 
 
   
   const canBuyContract = await myContract.canBuyAll(MY_ADRESS, 1);
   console.log("If Me can buy all : ", canBuyContract);
-  const canBuyMax = await myContract.canBuyAll(MAX_ADRESS, 1);
-  console.log("If Max can buy all : ", canBuyMax);
+  // const canBuyMax = await myContract.canBuyAll(MAX_ADRESS, 1);
+  // console.log("If Max can buy all : ", canBuyMax);
 
 
   const allOwner1 = await myContract.allOwner(1);
   console.log("All owner of 1 : ", allOwner1);
-  const allOwner2 = await myContract.allOwner(2);
-  console.log("All owner of 2 : ", allOwner2);
-  const allOwner3 = await myContract.allOwner(3);
-  console.log("All owner of 3 : ", allOwner3);
+  // const allOwner2 = await myContract.allOwner(2);
+  // console.log("All owner of 2 : ", allOwner2);
+  // const allOwner3 = await myContract.allOwner(3);
+  // console.log("All owner of 3 : ", allOwner3);
 
 
 
   const ownersWithoutMe = await myContract.OwnersWithoutMe(1);
   console.log("All owners of Saint-Emilion whithout you : ", ownersWithoutMe);
 
-  //const montantPourTousAcheter = await myContract.valueToBuy(1);
-  //console.log( `You need ${montantPourTousAcheter} DAI to buy all Saint-Emilion`);
+  const montantPourTousAcheter = await myContract.valueToBuy(lilA,1);
+  console.log( `You need ${montantPourTousAcheter} SPLIT to buy all Saint-Emilion`);
 
 
-  /*const forceBuy = await myContract.forceBuy(1, 3)
-  console.log("Result force buy : ", forceBuy);
-  const approve = await myContractERC20.approve(CONTRACT_ADDRESS,montantPourTousAcheter);
+  // const forceBuy = await myContract.forceBuy(1)
+  // console.log("Result force buy : ", forceBuy);
+
+  /*const approve = await myContractERC20.approve(CONTRACT_ADDRESS,montantPourTousAcheter);
   console.log( `Is approve : ${approve}`); */
 
   /* const mint = await myContractERC20.mintToken();

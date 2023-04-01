@@ -288,8 +288,8 @@ contract invest is ERC1155, Pausable {
 
         uint256 numberOfOwnersNotMe = numberOwnersWithoutMe(id);
         address[] memory addressOfOwnersNotMe = OwnersWithoutMe(id);
-        uint256 priceOneToken = SPLITToStruct[id].price /
-            SPLITToStruct[id].supply;
+        uint256 priceOneToken = (SPLITToStruct[id].price /
+            SPLITToStruct[id].supply) * (10^decimals);
 
         IERC20 erc20Contract = IERC20(erc20);
 
