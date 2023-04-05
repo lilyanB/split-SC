@@ -32,7 +32,7 @@ async function main() {
   // console.log("Address erc20 : ", newerc20);
 
   
-  // const transfert = await myContract.safeTransferFrom(lilA,maxA,1,1,2);
+  // const transfert = await myContract.safeTransferFrom(lilA,maxA,3,1,2);
   // console.log("Info transfert : ", JSON.stringify(transfert));
 
 
@@ -40,7 +40,7 @@ async function main() {
   const allowance = await myContractERC20.allowance(lilA,contract);
   console.log("Current allowance : ", allowance);
 
-  //const setValue = await myContract.setValuesOfNFT(10,1)
+  // const setValue = await myContract.setValuesOfNFT(8,3)
   const value = await myContract.getValuesOfNFT(1)
   console.log("Current value Wine : ", value);
 
@@ -74,13 +74,13 @@ async function main() {
 
 
   
-  const canBuyContract = await myContract.canBuyAll(MY_ADRESS, 1);
+  const canBuyContract = await myContract.canBuyAll(MY_ADRESS, 3);
   console.log("If Me can buy all : ", canBuyContract);
   // const canBuyMax = await myContract.canBuyAll(MAX_ADRESS, 1);
   // console.log("If Max can buy all : ", canBuyMax);
 
 
-  const allOwner1 = await myContract.allOwner(1);
+  const allOwner1 = await myContract.allOwner(3);
   console.log("All owner of 1 : ", allOwner1);
   // const allOwner2 = await myContract.allOwner(2);
   // console.log("All owner of 2 : ", allOwner2);
@@ -89,15 +89,15 @@ async function main() {
 
 
 
-  const ownersWithoutMe = await myContract.OwnersWithoutMe(1);
+  const ownersWithoutMe = await myContract.OwnersWithoutMe(3);
   console.log("All owners of Saint-Emilion whithout you : ", ownersWithoutMe);
 
-  const montantPourTousAcheter = await myContract.valueToBuy(lilA,1);
+  const montantPourTousAcheter = await myContract.valueToBuy(lilA,3);
   console.log( `You need ${montantPourTousAcheter} SPLIT to buy all Saint-Emilion`);
 
 
-  // const forceBuy = await myContract.forceBuy(1)
-  // console.log("Result force buy : ", forceBuy);
+  const forceBuy = await myContract.forceBuy(3)
+  console.log("Result force buy : ", forceBuy);
 
   /*const approve = await myContractERC20.approve(CONTRACT_ADDRESS,montantPourTousAcheter);
   console.log( `Is approve : ${approve}`); */
