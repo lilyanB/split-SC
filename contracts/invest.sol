@@ -195,11 +195,7 @@ contract invest is ERC1155, Pausable {
         }
     }
 
-    function burn(
-        address from,
-        uint256 id,
-        uint256 amount
-    ) public virtual {
+    function burn(address from, uint256 id, uint256 amount) public virtual {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not token owner nor approved"
@@ -215,7 +211,7 @@ contract invest is ERC1155, Pausable {
         address from,
         uint256[] memory ids,
         uint256[] memory amounts
-    ) public  virtual {
+    ) public virtual {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not token owner or approved"
@@ -289,7 +285,7 @@ contract invest is ERC1155, Pausable {
         uint256 numberOfOwnersNotMe = numberOwnersWithoutMe(id);
         address[] memory addressOfOwnersNotMe = OwnersWithoutMe(id);
         uint256 priceOneToken = (SPLITToStruct[id].price /
-            SPLITToStruct[id].supply) * (10^decimals);
+            SPLITToStruct[id].supply) * (10 ^ decimals);
 
         IERC20 erc20Contract = IERC20(erc20);
 

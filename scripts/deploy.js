@@ -1,6 +1,4 @@
-const {
-  ethers
-} = require("hardhat");
+const { ethers } = require("hardhat");
 
 async function main() {
   const invest = await ethers.getContractFactory("invest");
@@ -22,7 +20,7 @@ async function main2() {
 
 main()
   .then(() => process.exit(0))
-  .catch(error => {
+  .catch((error) => {
     console.error(error);
     process.exit(1);
   });
